@@ -1,0 +1,60 @@
+:root {
+  --font-ui: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-note: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --bg: #f3efe6;
+  --bg-elevated: #fffcf7;
+  --text: #1c1a16;
+  --text-muted: #6b6560;
+  --border: rgba(28, 26, 22, 0.12);
+  --accent: #c45c26;
+  --accent-hover: #a84c1e;
+  --danger: #b33b3b;
+  --radius: 10px;
+  --shadow: 0 8px 28px rgba(28, 26, 22, 0.12);
+}
+
+[data-theme='dark'] {
+  --bg: #1a1917;
+  --bg-elevated: #242220;
+  --text: #f2eee6;
+  --text-muted: #a39e96;
+  --border: rgba(242, 238, 230, 0.12);
+  --accent: #e07a45;
+  --accent-hover: #f09060;
+  --danger: #e07070;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}

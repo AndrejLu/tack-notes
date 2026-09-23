@@ -1,0 +1,209 @@
+.settings {
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 18px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(700px 260px at 100% -20%, rgba(196, 92, 38, 0.08), transparent 50%),
+    var(--bg);
+}
+
+.settings-header {
+  flex-shrink: 0;
+}
+
+.settings h1 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.tabs button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.panel {
+  flex: 0 0 auto;
+}
+
+.panel-general {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel section {
+  margin-bottom: 14px;
+}
+
+.panel section:last-child {
+  margin-bottom: 0;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.path {
+  font-family: Consolas, monospace;
+  font-size: 0.82rem;
+  word-break: break-all;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 6px;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.row button,
+.panel > button {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.settings .row button.danger,
+.settings .panel > button.danger {
+  color: var(--danger) !important;
+}
+
+.select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.select-label select {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  max-width: 220px;
+  color-scheme: light;
+}
+
+[data-theme='dark'] .select-label select {
+  color-scheme: dark;
+  background: #2c2a27;
+  color: #f2eee6;
+  border-color: rgba(242, 238, 230, 0.18);
+}
+
+.select-label select option {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+[data-theme='dark'] .select-label select option {
+  background: #2c2a27;
+  color: #f2eee6;
+}
+
+.switch-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.panel-trash {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.panel-trash > .hint,
+.panel-trash > button {
+  flex-shrink: 0;
+}
+
+.trash-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.trash-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.trash-list li span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.banner {
+  background: rgba(61, 158, 95, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  margin: 0 0 10px;
+}
+
+.empty {
+  color: var(--text-muted);
+}
+
+html,
+body {
+  overflow: hidden;
+  height: auto;
+  background: var(--bg);
+}
+
+#root {
+  height: auto;
+  overflow: visible;
+}

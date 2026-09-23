@@ -1,0 +1,62 @@
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-row.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.switch-label {
+  font-size: 0.92rem;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  padding: 0;
+  background: rgba(28, 26, 22, 0.18);
+  transition: background 160ms ease;
+  cursor: pointer;
+}
+
+[data-theme='dark'] .switch {
+  background: rgba(242, 238, 230, 0.22);
+}
+
+.switch.on {
+  background: var(--accent);
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 160ms ease;
+}
+
+.switch.on .switch-thumb {
+  transform: translateX(18px);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
