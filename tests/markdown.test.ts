@@ -64,7 +64,9 @@ describe('Markdown round-trip', () => {
   it('round-trips empty newlines between paragraphs', () => {
     const md = 'line one\n\nline two\n\n\nline three\n'
     const html = markdownToHtml(md)
-    expect(html).toBe('<p>line one</p><p></p><p>line two</p><p></p><p></p><p>line three</p>')
+    expect(html).toBe(
+      '<p>line one</p><p><br></p><p>line two</p><p><br></p><p><br></p><p>line three</p>'
+    )
     const back = htmlToMarkdown(html)
     expect(back).toBe(md)
   })
@@ -73,7 +75,7 @@ describe('Markdown round-trip', () => {
     const html = '<p>hello</p><p><br class="ProseMirror-trailingBreak"></p><p>world</p>'
     const md = htmlToMarkdown(html)
     expect(md).toBe('hello\n\nworld\n')
-    expect(markdownToHtml(md)).toBe('<p>hello</p><p></p><p>world</p>')
+    expect(markdownToHtml(md)).toBe('<p>hello</p><p><br></p><p>world</p>')
   })
 
   it('preserves blank lines from br-separated clipboard HTML', () => {
@@ -98,7 +100,7 @@ describe('Markdown round-trip', () => {
       '\n' +
       'ANO 0,5h napajalnik za displej\n'
     const html = markdownToHtml(plain)
-    expect(html).toContain('<p></p>')
+    expect(html).toContain('<p><br></p>')
     expect(htmlToMarkdown(html)).toBe(plain)
   })
 

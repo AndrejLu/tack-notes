@@ -185,7 +185,9 @@ export function hashContent(content: string): string {
  * Only the supported subset is emitted.
  */
 export function htmlToMarkdown(html: string): string {
-  if (!html || html === '<p></p>') return ''
+  if (!html || html === '<p></p>' || html === '<p><br></p>' || /^<p><br\b[^>]*><\/p>$/i.test(html)) {
+    return ''
+  }
 
   const blocks: string[] = []
   // Split top-level blocks loosely
@@ -352,7 +354,7 @@ function decodeEntities(s: string): string {
  */
 export function markdownToHtml(md: string): string {
   const text = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-  if (!text.trim()) return '<p></p>'
+  if (!text.trim()) return '<p><br></p>'
 
   const lines = text.replace(/\n$/, '').split('\n')
   const htmlParts: string[] = []
@@ -408,9 +410,9 @@ export function markdownToHtml(md: string): string {
       continue
     }
 
-    // Blank line → empty paragraph (preserves intentional empty newlines)
+    // Blank line → TipTap-compatible empty paragraph (<p></p> is stripped on paste/setContent)
     if (line.trim() === '') {
-      htmlParts.push('<p></p>')
+      htmlParts.push('<p><br></p>')
       i++
       continue
     }
@@ -420,7 +422,7 @@ export function markdownToHtml(md: string): string {
     i++
   }
 
-  return htmlParts.join('') || '<p></p>'
+  return htmlParts.join('') || '<p><br></p>'
 }
 
 function inlineMarkdownToHtml(text: string): string {

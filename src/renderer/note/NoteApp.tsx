@@ -5,6 +5,8 @@ import Underline from '@tiptap/extension-underline'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import Placeholder from '@tiptap/extension-placeholder'
+import { DOMParser as PmDOMParser, Fragment, Slice } from '@tiptap/pm/model'
+import type { EditorView } from '@tiptap/pm/view'
 import type { NoteEditorPayload } from '@shared/ipc'
 import { NOTE_COLORS, type NoteColor } from '@shared/note-model'
 import { htmlToMarkdown, markdownToHtml } from '@shared/markdown'
@@ -33,6 +35,84 @@ function normalizeMd(md: string): string {
   const text = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
   if (text.length === 0) return ''
   return text.endsWith('\n') ? text : `${text}\n`
+}
+
+/**
+ * Paste plain text as one paragraph per line.
+ * Empty lines use a hardBreak so ProseMirror does not drop them.
+ */
+function insertPlainTextLines(view: EditorView, plain: string): void {
+  const text = plain.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const lines = text.split('\n')
+  if (lines.length > 1 && lines[lines.length - 1] === '') {
+    lines.pop()
+  }
+
+  const { schema } = view.state
+  const paragraph = schema.nodes.paragraph
+  if (!paragraph) return
+
+  const nodes = lines.map((line) => {
+    if (line === '') {
+      // Empty paragraph (no hardBreak) = one blank line; a hardBreak renders as two
+      return paragraph.create()
+    }
+    return paragraph.create(null, schema.text(line))
+  })
+
+  view.dispatch(view.state.tr.replaceSelection(new Slice(Fragment.from(nodes), 0, 0)).scrollIntoView())
+}
+
+function insertHtmlAsMarkdown(view: EditorView, html: string): void {
+  const md = htmlToMarkdown(sanitizePasteHtml(html))
+  const safeHtml = markdownToHtml(md)
+  const el = document.createElement('div')
+  el.innerHTML = safeHtml
+  const slice = PmDOMParser.fromSchema(view.state.schema).parseSlice(el, {
+    preserveWhitespace: true
+  })
+  view.dispatch(view.state.tr.replaceSelection(slice).scrollIntoView())
+}
+
+function handleNotePaste(view: EditorView, event: ClipboardEvent): boolean {
+  const plain = event.clipboardData?.getData('text/plain') ?? ''
+  const html = event.clipboardData?.getData('text/html') ?? ''
+  const cleanHtml = html ? sanitizePasteHtml(html) : ''
+  const htmlHasMarks = /<(strong|em|u|s|b|i|del|ul|ol|li)\b/i.test(cleanHtml)
+
+  // Notepad / plain editors: Chromium may also supply HTML that dropped blank lines.
+  // Always prefer text/plain when there is no real rich formatting.
+  if (plain.length > 0 && !htmlHasMarks) {
+    insertPlainTextLines(view, plain)
+    return true
+  }
+
+  if (htmlHasMarks && cleanHtml) {
+    if (plain.length > 0) {
+      const plainMd = plain.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      const mdFromHtml = htmlToMarkdown(cleanHtml)
+      const plainBlanks = (plainMd.match(/\n\s*\n/g) || []).length
+      const htmlBlanks = (mdFromHtml.match(/\n\s*\n/g) || []).length
+      if (plainBlanks > htmlBlanks) {
+        insertPlainTextLines(view, plain)
+        return true
+      }
+    }
+    insertHtmlAsMarkdown(view, cleanHtml)
+    return true
+  }
+
+  if (plain.length > 0) {
+    insertPlainTextLines(view, plain)
+    return true
+  }
+
+  if (cleanHtml) {
+    insertHtmlAsMarkdown(view, cleanHtml)
+    return true
+  }
+
+  return false
 }
 
 export function NoteApp() {
@@ -75,21 +155,11 @@ export function NoteApp() {
     editorProps: {
       attributes: {
         class: 'ProseMirror note-editor',
-        'data-gramm': 'false'
+        'data-gramm': 'false',
+        spellcheck: 'false'
       },
-      transformPastedHTML(html) {
-        return sanitizePasteHtml(html)
-      },
-      handlePaste(_view, event) {
-        const html = event.clipboardData?.getData('text/html')
-        if (html) {
-          const clean = sanitizePasteHtml(html)
-          const md = htmlToMarkdown(clean)
-          const safeHtml = markdownToHtml(md)
-          // Use the editor from the closure via chain in onPaste below — handled in effect
-          return false
-        }
-        return false
+      handlePaste(view, event) {
+        return handleNotePaste(view, event)
       }
     },
     onUpdate: ({ editor: ed }) => {
@@ -99,47 +169,6 @@ export function NoteApp() {
       setPayload((p) => (p ? { ...p, saveStatus: 'unsaved', bodyMarkdown: md } : p))
     }
   })
-
-  // Custom paste that needs a stable editor reference
-  useEffect(() => {
-    if (!editor) return
-    editor.setOptions({
-      editorProps: {
-        ...editor.options.editorProps,
-        handlePaste(_view, event) {
-          const plain = event.clipboardData?.getData('text/plain') ?? ''
-          const html = event.clipboardData?.getData('text/html')
-
-          // Prefer plain text when present — Windows CF_HTML often drops blank lines.
-          // Keep HTML path only when plain is empty or HTML carries useful formatting
-          // that plain cannot represent and does not lose blank lines vs plain.
-          if (plain.length > 0) {
-            const plainMd = plain.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-            if (html) {
-              const clean = sanitizePasteHtml(html)
-              const htmlHasMarks = /<(strong|em|u|s|b|i|del|ul|ol|li)\b/i.test(clean)
-              const mdFromHtml = htmlToMarkdown(clean)
-              const plainBlanks = (plainMd.match(/\n\s*\n/g) || []).length
-              const htmlBlanks = (mdFromHtml.match(/\n\s*\n/g) || []).length
-              if (htmlHasMarks && htmlBlanks >= plainBlanks) {
-                editor.commands.insertContent(markdownToHtml(mdFromHtml))
-                return true
-              }
-            }
-            editor.commands.insertContent(markdownToHtml(plainMd))
-            return true
-          }
-
-          if (html) {
-            const clean = sanitizePasteHtml(html)
-            editor.commands.insertContent(markdownToHtml(htmlToMarkdown(clean)))
-            return true
-          }
-          return false
-        }
-      }
-    })
-  }, [editor])
 
   // Load note once editor is ready — keep EditorContent mounted (no loading gate)
   useEffect(() => {
@@ -459,7 +488,7 @@ export function NoteApp() {
               pushBody(e.target.value)
               setPayload((p) => (p ? { ...p, saveStatus: 'unsaved' } : p))
             }}
-            spellCheck
+            spellCheck={false}
           />
         ) : (
           <EditorContent editor={editor} />
