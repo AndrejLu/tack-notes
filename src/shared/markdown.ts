@@ -193,11 +193,18 @@ export function htmlToMarkdown(html: string): string {
 
   // Use regex-based conversion to avoid DOM dependency in Node/tests
   let remaining = wrapped
-    .replace(/<div>|<\/div>/g, '')
     .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+  // Keep existing whitespace between block tags (blank lines in CF_HTML)
+  remaining = remaining.replace(
+    /<\/(p|div|h[1-6]|tr|li)>(\s*)<(p|div|h[1-6]|tr|li)(\s[^>]*)?>/gi,
+    (_m, close: string, ws: string, open: string, attrs: string) =>
+      `</${close}>${ws.length > 0 ? ws : '\n'}<${open}${attrs ?? ''}>`
+  )
+  remaining = remaining.replace(/<\/?div\b[^>]*>/gi, '\n').replace(/<\/?span\b[^>]*>/gi, '')
 
-  // Normalize void tags
-  remaining = remaining.replace(/<br\s*\/?>/gi, '\n')
+  // Normalize void tags (including <br class="ProseMirror-trailingBreak">)
+  remaining = remaining.replace(/<br\b[^>]*>/gi, '\n')
 
   const blockRe =
     /<(p|h[1-6]|ul|ol|pre|blockquote)(\s[^>]*)?>([\s\S]*?)<\/\1>/gi
@@ -207,18 +214,16 @@ export function htmlToMarkdown(html: string): string {
 
   while ((match = blockRe.exec(remaining)) !== null) {
     if (match.index > lastIndex) {
-      const gap = remaining.slice(lastIndex, match.index).trim()
-      if (gap) parts.push({ type: 'p', inner: gap })
+      pushGapParts(parts, remaining.slice(lastIndex, match.index))
     }
     parts.push({ type: match[1].toLowerCase(), inner: match[3] })
     lastIndex = match.index + match[0].length
   }
   if (lastIndex < remaining.length) {
-    const gap = remaining.slice(lastIndex).trim()
-    if (gap) parts.push({ type: 'p', inner: gap })
+    pushGapParts(parts, remaining.slice(lastIndex))
   }
 
-  if (parts.length === 0 && remaining.trim()) {
+  if (parts.length === 0 && remaining.replace(/\s/g, '').length > 0) {
     parts.push({ type: 'p', inner: remaining })
   }
 
@@ -228,12 +233,41 @@ export function htmlToMarkdown(html: string): string {
     } else if (part.type === 'ol') {
       blocks.push(orderedListHtmlToMarkdown(part.inner))
     } else {
-      const line = inlineHtmlToMarkdown(part.inner).trim()
-      blocks.push(line)
+      const line = inlineHtmlToMarkdown(part.inner)
+      // Empty editor paragraph (<p></p> or <p><br></p>) → one blank line
+      if (line.trim() === '') {
+        blocks.push('')
+        continue
+      }
+      for (const segment of line.split('\n')) {
+        blocks.push(segment.trim() === '' ? '' : segment.trimEnd())
+      }
     }
   }
 
-  return normalizeBody(blocks.join('\n\n'))
+  // Drop leading/trailing empties from wrapper noise; keep internal blanks
+  while (blocks.length > 0 && blocks[0] === '') blocks.shift()
+  while (blocks.length > 0 && blocks[blocks.length - 1] === '') blocks.pop()
+
+  return normalizeBody(blocks.join('\n'))
+}
+
+/** Preserve blank lines found between HTML blocks (e.g. </p>\\n\\n<p>). */
+function pushGapParts(parts: Array<{ type: string; inner: string }>, gap: string): void {
+  if (!gap) return
+  const withoutTags = gap.replace(/<[^>]+>/g, '')
+  if (withoutTags.trim()) {
+    for (const segment of withoutTags.split('\n')) {
+      parts.push({ type: 'p', inner: segment })
+    }
+    return
+  }
+  // Whitespace-only gap: one newline is structural; each extra is a blank line
+  const newlineCount = (withoutTags.match(/\n/g) || []).length
+  const blanks = Math.max(0, newlineCount - 1)
+  for (let i = 0; i < blanks; i++) {
+    parts.push({ type: 'p', inner: '' })
+  }
 }
 
 function listHtmlToMarkdown(inner: string): string {
@@ -296,7 +330,7 @@ function inlineHtmlToMarkdown(html: string): string {
   // Placeholder so a later tag-strip pass does not remove underline markers
   s = s.replace(/<u>([\s\S]*?)<\/u>/gi, (_, inner) => `{{U}}${inlineHtmlToMarkdown(inner)}{{/U}}`)
   s = s.replace(/<code>([\s\S]*?)<\/code>/gi, (_, inner) => `\`${inner}\``)
-  s = s.replace(/<br\s*\/?>/gi, '\n')
+  s = s.replace(/<br\b[^>]*>/gi, '\n')
   s = s.replace(/<\/?p>/gi, '')
   s = s.replace(/<[^>]+>/g, '')
   s = s.replace(/\{\{U\}\}/g, '<u>').replace(/\{\{\/U\}\}/g, '</u>')
@@ -374,22 +408,16 @@ export function markdownToHtml(md: string): string {
       continue
     }
 
-    // Blank line
+    // Blank line → empty paragraph (preserves intentional empty newlines)
     if (line.trim() === '') {
+      htmlParts.push('<p></p>')
       i++
       continue
     }
 
-    // Paragraph — gather consecutive non-list lines
-    const paraLines: string[] = []
-    while (i < lines.length) {
-      const l = lines[i]
-      if (l.trim() === '') break
-      if (/^\s*[-*+]\s+/.test(l) || /^\s*\d+\.\s+/.test(l)) break
-      paraLines.push(l)
-      i++
-    }
-    htmlParts.push(`<p>${inlineMarkdownToHtml(paraLines.join('\n'))}</p>`)
+    // One Markdown line → one editor paragraph
+    htmlParts.push(`<p>${inlineMarkdownToHtml(line)}</p>`)
+    i++
   }
 
   return htmlParts.join('') || '<p></p>'

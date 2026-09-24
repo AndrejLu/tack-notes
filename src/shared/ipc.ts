@@ -35,6 +35,7 @@ export interface IpcApi {
   pickStorageFolder(): Promise<string | null>
   completeSetup(storageFolder: string): Promise<void>
   changeStorageFolder(folder: string, mode: 'open' | 'migrate'): Promise<{ ok: boolean; error?: string }>
+  openStorageFolder(): Promise<{ ok: boolean; error?: string }>
   getDefaultStorageFolder(): Promise<string>
   setTheme(theme: ThemePreference): Promise<void>
   setLaunchAtLogin(enabled: boolean): Promise<void>
@@ -88,6 +89,7 @@ export const IPC_CHANNELS = {
     pickStorageFolder: 'tack:pickStorageFolder',
     completeSetup: 'tack:completeSetup',
     changeStorageFolder: 'tack:changeStorageFolder',
+    openStorageFolder: 'tack:openStorageFolder',
     getDefaultStorageFolder: 'tack:getDefaultStorageFolder',
     setTheme: 'tack:setTheme',
     setLaunchAtLogin: 'tack:setLaunchAtLogin',

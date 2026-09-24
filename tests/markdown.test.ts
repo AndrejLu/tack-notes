@@ -61,6 +61,47 @@ describe('Markdown round-trip', () => {
     expect(back).toContain('- [x] done')
   })
 
+  it('round-trips empty newlines between paragraphs', () => {
+    const md = 'line one\n\nline two\n\n\nline three\n'
+    const html = markdownToHtml(md)
+    expect(html).toBe('<p>line one</p><p></p><p>line two</p><p></p><p></p><p>line three</p>')
+    const back = htmlToMarkdown(html)
+    expect(back).toBe(md)
+  })
+
+  it('round-trips empty paragraphs from TipTap HTML', () => {
+    const html = '<p>hello</p><p><br class="ProseMirror-trailingBreak"></p><p>world</p>'
+    const md = htmlToMarkdown(html)
+    expect(md).toBe('hello\n\nworld\n')
+    expect(markdownToHtml(md)).toBe('<p>hello</p><p></p><p>world</p>')
+  })
+
+  it('preserves blank lines from br-separated clipboard HTML', () => {
+    const html =
+      'PRO one<br>PRO two<br><br>NXD one<br><br><br>ANO one'
+    const md = htmlToMarkdown(html)
+    expect(md).toBe('PRO one\nPRO two\n\nNXD one\n\n\nANO one\n')
+  })
+
+  it('preserves blank lines between paragraphs when CF_HTML omits empty p tags', () => {
+    const html = '<p>PRO one</p>\n\n<p>NXD one</p>'
+    const md = htmlToMarkdown(html)
+    expect(md).toBe('PRO one\n\nNXD one\n')
+  })
+
+  it('round-trips plain multiline paste with blank lines', () => {
+    const plain =
+      'PRO 21.07.2026 0,5h wp urgent update\n' +
+      'PRO 24.08.2026 0,5h storage\n' +
+      '\n' +
+      'NXD 21.07.2026 0,5h posodobitev urgent\n' +
+      '\n' +
+      'ANO 0,5h napajalnik za displej\n'
+    const html = markdownToHtml(plain)
+    expect(html).toContain('<p></p>')
+    expect(htmlToMarkdown(html)).toBe(plain)
+  })
+
   it('preserves Unicode', () => {
     const md = '日本語 🎉 café ñ\n'
     const doc = {

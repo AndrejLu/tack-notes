@@ -1,6 +1,6 @@
 {
   "name": "tack-notes",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Tack Notes — desktop sticky notes with Markdown files you control",
   "main": "out/main/index.js",
   "author": "Tack Notes",

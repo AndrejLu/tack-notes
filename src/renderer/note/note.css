@@ -190,7 +190,7 @@ body,
   height: 100%;
   font-family: var(--font-note);
   font-size: 0.95rem;
-  line-height: 1.45;
+  line-height: 1.25;
   color: inherit;
 }
 
@@ -208,7 +208,7 @@ body,
 }
 
 .note-editor p {
-  margin: 0 0 0.5em;
+  margin: 0;
 }
 
 .note-editor ul {
@@ -233,6 +233,10 @@ body,
 
 .note-editor ul[data-type='taskList'] li > div {
   flex: 1;
+}
+
+.note-editor p + p {
+  margin-top: 0.15em;
 }
 
 .source-editor {

@@ -13,6 +13,7 @@ const api: IpcApi = {
   completeSetup: (folder) => invoke(IPC_CHANNELS.invoke.completeSetup, folder),
   changeStorageFolder: (folder, mode) =>
     invoke(IPC_CHANNELS.invoke.changeStorageFolder, folder, mode),
+  openStorageFolder: () => invoke(IPC_CHANNELS.invoke.openStorageFolder),
   getDefaultStorageFolder: () => invoke(IPC_CHANNELS.invoke.getDefaultStorageFolder),
   setTheme: (theme: ThemePreference) => invoke(IPC_CHANNELS.invoke.setTheme, theme),
   setLaunchAtLogin: (enabled: boolean) =>

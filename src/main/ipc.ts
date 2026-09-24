@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron'
 import {
   getDefaultStorageFolder,
   loadSettings,
@@ -141,6 +141,16 @@ export function registerIpc(): void {
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) }
     }
+  })
+
+  ipcMain.handle(ch.openStorageFolder, async () => {
+    const folder = storage.getFolder() ?? loadSettings().storageFolder
+    if (!folder) {
+      return { ok: false, error: 'Notes folder is not set' }
+    }
+    const err = await shell.openPath(folder)
+    if (err) return { ok: false, error: err }
+    return { ok: true }
   })
 
   ipcMain.handle(ch.setTheme, (_e, theme: ThemePreference) => {

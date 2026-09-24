@@ -107,11 +107,32 @@ export function NoteApp() {
       editorProps: {
         ...editor.options.editorProps,
         handlePaste(_view, event) {
+          const plain = event.clipboardData?.getData('text/plain') ?? ''
           const html = event.clipboardData?.getData('text/html')
+
+          // Prefer plain text when present — Windows CF_HTML often drops blank lines.
+          // Keep HTML path only when plain is empty or HTML carries useful formatting
+          // that plain cannot represent and does not lose blank lines vs plain.
+          if (plain.length > 0) {
+            const plainMd = plain.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+            if (html) {
+              const clean = sanitizePasteHtml(html)
+              const htmlHasMarks = /<(strong|em|u|s|b|i|del|ul|ol|li)\b/i.test(clean)
+              const mdFromHtml = htmlToMarkdown(clean)
+              const plainBlanks = (plainMd.match(/\n\s*\n/g) || []).length
+              const htmlBlanks = (mdFromHtml.match(/\n\s*\n/g) || []).length
+              if (htmlHasMarks && htmlBlanks >= plainBlanks) {
+                editor.commands.insertContent(markdownToHtml(mdFromHtml))
+                return true
+              }
+            }
+            editor.commands.insertContent(markdownToHtml(plainMd))
+            return true
+          }
+
           if (html) {
             const clean = sanitizePasteHtml(html)
-            const md = htmlToMarkdown(clean)
-            editor.commands.insertContent(markdownToHtml(md))
+            editor.commands.insertContent(markdownToHtml(htmlToMarkdown(clean)))
             return true
           }
           return false

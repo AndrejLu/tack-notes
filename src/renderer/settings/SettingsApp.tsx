@@ -134,6 +134,18 @@ export function SettingsApp() {
             <div className="row">
               <button
                 type="button"
+                disabled={!settings.storageFolder}
+                onClick={async () => {
+                  const result = await window.tack.openStorageFolder()
+                  if (!result.ok) {
+                    setMessage(result.error ?? 'Could not open folder')
+                  }
+                }}
+              >
+                Open Tack Notes folder
+              </button>
+              <button
+                type="button"
                 onClick={async () => {
                   const folder = await window.tack.pickStorageFolder()
                   if (!folder) return
