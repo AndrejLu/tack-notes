@@ -13,6 +13,7 @@ import { IPC_CHANNELS, type SaveStatus } from '@shared/ipc'
 import {
   deriveTitle,
   isNoteColor,
+  isNoteFontSize,
   type NoteColor,
   type ThemePreference
 } from '@shared/note-model'
@@ -82,7 +83,13 @@ export function registerIpc(): void {
   ipcMain.handle(ch.getSettings, () => loadSettings())
   ipcMain.handle(ch.updateSettings, (_e, patch: Partial<ReturnType<typeof loadSettings>>) => {
     const prev = loadSettings()
-    const next = patchSettings(patch)
+    const sanitized: Partial<ReturnType<typeof loadSettings>> = { ...patch }
+    if (patch && 'noteFontSize' in patch) {
+      if (!isNoteFontSize(patch.noteFontSize)) {
+        delete sanitized.noteFontSize
+      }
+    }
+    const next = patchSettings(sanitized)
     if (
       typeof patch?.rememberWindowLayout === 'boolean' &&
       patch.rememberWindowLayout === false &&
@@ -95,6 +102,9 @@ export function registerIpc(): void {
     }
     if (typeof patch?.hideTrayIcon === 'boolean') {
       applyTrayVisibility()
+    }
+    if (isNoteFontSize(next.noteFontSize) && next.noteFontSize !== prev.noteFontSize) {
+      windows.broadcast(IPC_CHANNELS.events.noteFontSizeChanged, next.noteFontSize)
     }
     return next
   })

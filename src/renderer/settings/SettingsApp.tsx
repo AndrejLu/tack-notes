@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { AppSettings, ThemePreference } from '@shared/note-model'
+import type { AppSettings, NoteFontSize, ThemePreference } from '@shared/note-model'
+import { DEFAULT_NOTE_FONT_SIZE, NOTE_FONT_SIZES } from '@shared/note-model'
 import type { TrashEntry } from '@shared/ipc'
 import { applyTheme } from '../theme'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -185,6 +186,24 @@ export function SettingsApp() {
                 <option value="dark">Dark</option>
               </select>
             </label>
+            <label className="select-label" style={{ marginTop: 12 }}>
+              Note font size
+              <select
+                value={settings.noteFontSize ?? DEFAULT_NOTE_FONT_SIZE}
+                onChange={async (e) => {
+                  const noteFontSize = Number(e.target.value) as NoteFontSize
+                  await window.tack.updateSettings({ noteFontSize })
+                  setSettings(await window.tack.getSettings())
+                }}
+              >
+                {NOTE_FONT_SIZES.map((size) => (
+                  <option key={size} value={size}>
+                    {size}px{size === DEFAULT_NOTE_FONT_SIZE ? ' (default)' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="hint">Applies to the text in all sticky notes.</p>
           </section>
 
           <section>

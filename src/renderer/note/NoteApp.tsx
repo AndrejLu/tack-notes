@@ -13,6 +13,7 @@ import { htmlToMarkdown, markdownToHtml } from '@shared/markdown'
 import { COLOR_VALUES, applyTheme } from '../theme'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import '../components/confirm.css'
+import { DEFAULT_NOTE_FONT_SIZE } from '@shared/note-model'
 
 function getNoteId(): string {
   const params = new URLSearchParams(window.location.search)
@@ -119,6 +120,7 @@ export function NoteApp() {
   const noteId = useMemo(() => getNoteId(), [])
   const [payload, setPayload] = useState<NoteEditorPayload | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [noteFontSize, setNoteFontSize] = useState(DEFAULT_NOTE_FONT_SIZE)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [sourceMode, setSourceMode] = useState(false)
@@ -176,6 +178,10 @@ export function NoteApp() {
     let cancelled = false
     void (async () => {
       await applyTheme().then(setTheme)
+      const settings = await window.tack.getSettings()
+      const size = settings.noteFontSize ?? DEFAULT_NOTE_FONT_SIZE
+      setNoteFontSize(size)
+      document.documentElement.style.setProperty('--note-font-size', `${size}px`)
       const p = await window.tack.getNote(noteId)
       if (cancelled || !p) return
       loadedRef.current = true
@@ -200,6 +206,17 @@ export function NoteApp() {
       cancelled = true
     }
   }, [editor, noteId])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--note-font-size', `${noteFontSize}px`)
+  }, [noteFontSize])
+
+  useEffect(() => {
+    const offFont = window.tack.onNoteFontSizeChanged((size) => {
+      setNoteFontSize(size)
+    })
+    return offFont
+  }, [])
 
   useEffect(() => {
     const offNote = window.tack.onNoteUpdated((p) => {

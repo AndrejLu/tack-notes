@@ -64,6 +64,11 @@ const api: IpcApi = {
     ipcRenderer.on(IPC_CHANNELS.events.themeChanged, listener)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.events.themeChanged, listener)
   },
+  onNoteFontSizeChanged: (cb) => {
+    const listener = (_: Electron.IpcRendererEvent, size: Parameters<typeof cb>[0]) => cb(size)
+    ipcRenderer.on(IPC_CHANNELS.events.noteFontSizeChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.events.noteFontSizeChanged, listener)
+  },
   onSaveStatus: (cb) => {
     const listener = (_: Electron.IpcRendererEvent, payload: Parameters<typeof cb>[0]) => cb(payload)
     ipcRenderer.on(IPC_CHANNELS.events.saveStatus, listener)

@@ -88,9 +88,20 @@ export interface NoteConflict {
 
 export type ThemePreference = 'system' | 'light' | 'dark'
 
+/** Allowed note body font sizes in pixels. */
+export const NOTE_FONT_SIZES = [12, 13, 14, 15, 16, 18, 20, 22, 24] as const
+export type NoteFontSize = (typeof NOTE_FONT_SIZES)[number]
+export const DEFAULT_NOTE_FONT_SIZE: NoteFontSize = 15
+
+export function isNoteFontSize(value: unknown): value is NoteFontSize {
+  return typeof value === 'number' && (NOTE_FONT_SIZES as readonly number[]).includes(value)
+}
+
 export interface AppSettings {
   storageFolder: string | null
   theme: ThemePreference
+  /** Global note body font size in pixels. */
+  noteFontSize: NoteFontSize
   launchAtLogin: boolean
   /** Remember note (and central) window positions and sizes. */
   rememberWindowLayout: boolean

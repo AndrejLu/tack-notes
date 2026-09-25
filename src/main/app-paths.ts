@@ -40,10 +40,12 @@ export function getDefaultStorageFolder(): string {
 }
 
 import type { AppSettings, SessionState, ThemePreference } from '@shared/note-model'
+import { DEFAULT_NOTE_FONT_SIZE, isNoteFontSize } from '@shared/note-model'
 
 const defaultSettings = (): AppSettings => ({
   storageFolder: null,
   theme: 'system',
+  noteFontSize: DEFAULT_NOTE_FONT_SIZE,
   launchAtLogin: false,
   rememberWindowLayout: true,
   hideTaskbarIcon: false,
@@ -74,7 +76,11 @@ function writeJson(filePath: string, data: unknown): void {
 
 export function loadSettings(): AppSettings {
   ensureDir(getAppDataRoot())
-  return readJson(path.join(getAppDataRoot(), SETTINGS_FILE), defaultSettings())
+  const loaded = readJson(path.join(getAppDataRoot(), SETTINGS_FILE), defaultSettings())
+  if (!isNoteFontSize(loaded.noteFontSize)) {
+    loaded.noteFontSize = DEFAULT_NOTE_FONT_SIZE
+  }
+  return loaded
 }
 
 export function saveSettings(settings: AppSettings): void {

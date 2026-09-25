@@ -79,6 +79,7 @@ export interface IpcApi {
   onNotesChanged(cb: (notes: NoteSummary[]) => void): () => void
   onNoteUpdated(cb: (payload: NoteEditorPayload) => void): () => void
   onThemeChanged(cb: (theme: 'light' | 'dark') => void): () => void
+  onNoteFontSizeChanged(cb: (size: number) => void): () => void
   onSaveStatus(cb: (payload: { noteId: string; status: SaveStatus; error?: string }) => void): () => void
 }
 
@@ -122,6 +123,7 @@ export const IPC_CHANNELS = {
     notesChanged: 'tack:notesChanged',
     noteUpdated: 'tack:noteUpdated',
     themeChanged: 'tack:themeChanged',
+    noteFontSizeChanged: 'tack:noteFontSizeChanged',
     saveStatus: 'tack:saveStatus'
   }
 } as const
