@@ -1,71 +1,65 @@
-# Tack Notes
+<p align="center">
+  <img src="docs/icon.png" alt="Tack Notes icon" width="96" height="96" />
+</p>
 
-Desktop sticky notes for Windows. Each note is a plain UTF-8 Markdown file with YAML front matter — readable in Notepad++, editable offline, and safe to keep in a folder synced by Nextcloud, Dropbox, Google Drive, or OneDrive.
+<h1 align="center">Tack Notes</h1>
 
-Tack Notes is an original app. It is not affiliated with Microsoft Sticky Notes.
+<p align="center">
+  <strong>Sticky notes that live as Markdown files you control.</strong><br />
+  Windows desktop app · offline · sync-folder friendly
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#your-notes-your-files">Your files</a> ·
+  <a href="#development">Development</a>
+</p>
+
+---
+
+<p align="center">
+  <img src="docs/screenshots/desktop.png" alt="Several colored Tack Notes sticky notes on the desktop" width="820" />
+</p>
+
+Tack Notes is a Windows sticky-notes app. Each note is a plain UTF-8 Markdown file with a short YAML header — open them in any editor, keep them in Nextcloud, Dropbox, Google Drive, or OneDrive, and edit offline anytime.
+
+It is an original app and is **not** affiliated with Microsoft Sticky Notes.
+
+## Install
+
+1. Download the latest installer: [`Tack-Notes-Setup-*.exe`](https://github.com/AndrejLu/tack-notes/releases) (or build from source below).
+2. Run the installer (per-user; admin is not required by default).
+3. On first launch, pick a folder for your notes (or accept `Documents\Tack Notes`).
+
+Then create notes from the tray icon, the notes list, or Jump List tasks.
+
+## Screenshots
+
+| Sticky notes | Notes list |
+|:---:|:---:|
+| <img src="docs/screenshots/desktop.png" alt="Colored sticky notes on the desktop" width="420" /> | <img src="docs/screenshots/notes-list.png" alt="Central notes list window" width="260" /> |
+
+| A single note | Settings |
+|:---:|:---:|
+| <img src="docs/screenshots/note-window.png" alt="One sticky note window" width="260" /> | <img src="docs/screenshots/settings.png" alt="Settings window" width="260" /> |
 
 ## Features
 
-- Central notes list with search, color indicators, and sort by last modified
-- Independent, movable, resizable note windows (no duplicate windows per note)
-- Rich text: bold, italic, underline, strikethrough, bullets, checklists
-- Per-note colors and optional always-on-top
-- System tray with New note, All notes, Settings, Quit
-- Recoverable trash inside the notes collection
-- Autosave to Markdown; local window state outside the synced folder
-- Light / dark / system themes
-- Launch at Windows sign-in (optional)
-- Best-effort merge when files change externally, with conflict UI and local recovery snapshots
+- **Independent note windows** — move, resize, and pin always-on-top
+- **Rich text** — bold, italic, underline, strikethrough, bullets, checklists
+- **Colors** — pick a color per note
+- **Central list** — search and open any note quickly
+- **System tray** — new note, all notes, settings, quit
+- **Trash** — recoverable deletes inside your notes folder
+- **Autosave** — writes Markdown as you type
+- **Themes** — light, dark, or follow Windows
+- **Font size** — one setting for all notes
+- **Sync-aware** — best-effort merge when files change on disk or another PC, with a clear conflict UI
 
-## Requirements
+## Your notes, your files
 
-- Windows 10/11 (x64)
-- For development: Node.js 20+ and npm
-
-## Development
-
-```bash
-npm install
-npm run dev
-```
-
-### Scripts
-
-| Command | Description |
-|--------|-------------|
-| `npm run dev` | Run the app with hot reload |
-| `npm test` | Run unit tests (serialization, merge, storage) |
-| `npm run build` | Compile main/preload/renderer to `out/` |
-| `npm run dist` | Build + create NSIS installer in `packaged/` |
-| `npm run dist:dir` | Build unpacked app directory (no installer) |
-| `npm run typecheck` | TypeScript check |
-
-## Production build / installer
-
-Per-user NSIS installer (no admin required by default):
-
-```bash
-npm install
-npm run dist
-```
-
-Output: `packaged/Tack-Notes-Setup-1.0.0.exe`
-
-If GitHub is unreachable (electron-builder cannot download NSIS tooling):
-
-1. `npm run build`
-2. `npx electron-builder --win dir` — produces `packaged/win-unpacked/Tack Notes.exe`
-3. On a networked machine, run `npx electron-builder --win nsis` once so NSIS tools cache under `%LOCALAPPDATA%\electron-builder\Cache`, then rebuild.
-
-If `electron-builder` cannot download Electron binaries (offline CI, proxy, etc.):
-
-1. Ensure `npm install` completed so `node_modules/electron/dist` exists (`electronDist` is configured).
-2. Run `npm run build` then `npx electron-builder --win nsis`.
-3. NSIS is configured in `package.json` → `build.nsis` with `perMachine: false` (per-user install).
-
-## Storage format
-
-One note per file: `<uuid>.md`
+One note = one file named with a UUID:
 
 ```markdown
 ---
@@ -83,57 +77,49 @@ Shopping list
 **Bold** *italic* <u>underline</u> ~~strike~~
 ```
 
-- Filename is the permanent UUID (not derived from title).
-- Title in the list is the first nonempty line, or “Untitled note”.
-- Underline uses `<u>`; other marks use standard Markdown.
-- Trash lives in `.tack-trash/` inside the collection (same Markdown + `deleted_at`).
-- App settings, window positions, and recovery history live under `%APPDATA%\tack-notes\` (outside the synced folder).
+- The title in the list is the first nonempty line (or “Untitled note”).
+- Trash lives in `.tack-trash/` inside your notes folder.
+- App settings and window positions stay under `%APPDATA%\tack-notes\` (outside the synced folder).
 
-### Choosing a folder
+### Changing folders
 
-On first launch, Tack Notes suggests `Documents\Tack Notes` and lets you pick another folder (including an existing cloud-synced directory).
+In **Settings**:
 
-In Settings:
+- **Open Tack Notes folder** — reveal the current notes folder in Explorer
+- **Open other folder…** — switch collections without copying
+- **Migrate to folder…** — copy notes into a new folder (won’t overwrite conflicts)
 
-- **Open other folder** — switch to another collection without copying notes.
-- **Migrate to folder** — copy notes into a new folder; refuses to overwrite conflicting files.
+## Sync tips
 
-Tack Notes never silently merges two collections.
+Cloud folders do not guarantee conflict-free editing. Tack Notes:
 
-## Conflicts and sync
+1. Detects when the file on disk differs from what you’re editing
+2. Merges safe changes automatically when it can
+3. Asks you to **Keep mine**, **Keep disk**, or **Keep both** when edits overlap
 
-Synced folders do **not** guarantee conflict-free concurrent editing. Tack Notes:
+“Saved” means the file was written on this PC — not that the cloud finished uploading.
 
-1. Keeps base / editor / disk versions and content hashes
-2. Rereads before save; merges unambiguous changes
-3. Surfaces overlapping edits with Keep mine / Keep disk / Keep both (new ID)
-4. Detects divergent files that share one note ID (sync conflict copies)
-5. Writes short-lived `*.tmp` files then replaces; never deletes the original as a blind fallback
-6. Stores bounded recovery snapshots under local app data
+## Development
 
-**Limitation:** read-check-replace still races with other writers and cloud clients. Local “Saved” means the file was written on disk — not that the cloud provider finished uploading.
+**Requirements:** Windows 10/11 (x64), Node.js 20+, npm
 
-A missing storage folder is treated as unavailable, not as “delete every note.”
+```bash
+npm install
+npm run dev
+```
 
-## Architecture (summary)
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Run with hot reload |
+| `npm test` | Unit tests |
+| `npm run build` | Compile to `out/` |
+| `npm run dist` | Build NSIS installer in `packaged/` |
+| `npm run typecheck` | TypeScript check |
 
-| Layer | Location |
-|-------|----------|
-| Note model + Markdown | `src/shared/` |
-| Filesystem storage + merge | `src/main/storage.ts` |
-| Window management | `src/main/windows.ts` |
-| IPC (validated channels) | `src/main/ipc.ts`, `src/preload/` |
-| UI | `src/renderer/` |
-
-Renderers run with context isolation, no Node integration, and a restrictive CSP. Note HTML is sanitized; scripts/remote resources are not executed.
-
-## Assumptions
-
-- Single active user per machine collection; multiple devices OK via file sync with best-effort merge
-- English UI for v1
-- No images, accounts, or direct cloud APIs
-- Links and advanced Markdown open in source/limited mode rather than silent data loss
+Installer output: `packaged/Tack-Notes-Setup-<version>.exe`
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE)
+
+Copyright (c) 2026 Andrej Lukman

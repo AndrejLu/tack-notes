@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      width: 440px;
+      height: 620px;
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(700px 260px at 100% -20%, rgba(196, 92, 38, 0.08), transparent 50%),
+        #f3efe6;
+      color: #1c1a16;
+      padding: 16px 20px 18px;
+      overflow: hidden;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.25rem; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tabs span {
+      border: 1px solid rgba(28,26,22,0.12);
+      background: #fffcf7;
+      border-radius: 8px;
+      padding: 5px 11px;
+      font-size: 12px;
+    }
+    .tabs .active { border-color: #c45c26; color: #c45c26; }
+    h2 { margin: 0 0 5px; font-size: 0.9rem; }
+    section { margin-bottom: 12px; }
+    .path {
+      font-family: Consolas, monospace;
+      font-size: 0.78rem;
+      background: #fffcf7;
+      border: 1px solid rgba(28,26,22,0.12);
+      border-radius: 8px;
+      padding: 7px 9px;
+      margin: 0 0 5px;
+      word-break: break-all;
+    }
+    .hint { color: #6b6560; font-size: 0.78rem; line-height: 1.35; margin: 0 0 6px; }
+    .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .fake-btn {
+      border: 1px solid rgba(28,26,22,0.12);
+      background: #fffcf7;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+    .select-label {
+      display: flex; flex-direction: column; gap: 5px;
+      font-size: 0.85rem; margin-top: 8px;
+    }
+    .select-label .box {
+      border: 1px solid rgba(28,26,22,0.12);
+      background: #fffcf7;
+      border-radius: 8px;
+      padding: 7px 9px;
+      max-width: 200px;
+    }
+    .switch {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-top: 8px; font-size: 0.85rem;
+    }
+    .toggle {
+      width: 40px; height: 22px; border-radius: 999px;
+      background: #c45c26; position: relative; flex-shrink: 0;
+    }
+    .toggle::after {
+      content: ""; position: absolute; top: 2px; right: 2px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    }
+    .toggle.off { background: #cfc8bc; }
+    .toggle.off::after { left: 2px; right: auto; }
+  </style>
+</head>
+<body>
+  <h1>Settings</h1>
+  <div class="tabs">
+    <span class="active">General</span>
+    <span>Trash (0)</span>
+  </div>
+
+  <section>
+    <h2>Notes folder</h2>
+    <p class="path">C:\Users\Jordan\Documents\Tack Notes</p>
+    <p class="hint">Any local folder works, including cloud-synced ones. Tack Notes only reads and writes Markdown files.</p>
+    <div class="row">
+      <span class="fake-btn">Open Tack Notes folder</span>
+      <span class="fake-btn">Open other folder…</span>
+      <span class="fake-btn">Migrate to folder…</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Appearance</h2>
+    <label class="select-label">
+      Theme
+      <div class="box">System</div>
+    </label>
+    <label class="select-label">
+      Note font size
+      <div class="box">15px (default)</div>
+    </label>
+    <p class="hint">Applies to the text in all sticky notes.</p>
+  </section>
+
+  <section>
+    <h2>Windows</h2>
+    <div class="switch">
+      <span>Remember window positions and sizes</span>
+      <div class="toggle"></div>
+    </div>
+    <p class="hint">Notes and the list reopen where you left them when this is on.</p>
+    <div class="switch">
+      <span>Hide taskbar icon</span>
+      <div class="toggle off"></div>
+    </div>
+    <div class="switch">
+      <span>Hide tray icon</span>
+      <div class="toggle off"></div>
+    </div>
+  </section>
+</body>
+</html>

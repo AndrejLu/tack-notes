@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    html, body { width: 100%; height: 100%; }
+    body {
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(700px 320px at 15% 0%, rgba(196, 92, 38, 0.14), transparent 55%),
+        radial-gradient(560px 280px at 95% 5%, rgba(61, 158, 95, 0.12), transparent 50%),
+        linear-gradient(160deg, #efeae0, #ddd6c8 60%, #d0c8b8);
+      overflow: hidden;
+      position: relative;
+      color: #1c1a16;
+    }
+    .note {
+      position: absolute;
+      width: 240px;
+      border-radius: 4px 4px 10px 10px;
+      box-shadow: 0 10px 28px rgba(28, 26, 22, 0.18);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .yellow { background: #fff6a5; top: 36px; left: 28px; height: 300px; }
+    .green { background: #c8f0c8; top: 72px; left: 290px; height: 270px; }
+    .blue { background: #c8e4f8; top: 48px; left: 550px; height: 310px; }
+    .titlebar { height: 24px; display: flex; justify-content: flex-end; }
+    .yellow .titlebar { background: #f0e07a; }
+    .green .titlebar { background: #a8e0a8; }
+    .blue .titlebar { background: #a8d4f0; }
+    .tb { width: 28px; opacity: 0.55; font-size: 11px; display: grid; place-items: center; }
+    .toolbar {
+      display: flex; gap: 2px; padding: 4px 6px;
+      border-bottom: 1px solid rgba(0,0,0,0.08); font-size: 11px; font-weight: 600; opacity: 0.75;
+    }
+    .toolbar span { width: 22px; height: 20px; display: grid; place-items: center; }
+    .saved { margin-left: auto; font-size: 10px; font-weight: 500; opacity: 0.5; padding-right: 4px; align-self: center; }
+    .body { padding: 10px 12px 14px; font-size: 13px; line-height: 1.35; flex: 1; }
+    ul { margin: 8px 0 0; padding-left: 0; list-style: none; }
+    li { margin: 3px 0; }
+    li::before { content: "☐ "; }
+    li.done::before { content: "☑ "; }
+    .label { position: absolute; left: 24px; bottom: 18px; font-size: 12px; color: rgba(28,26,22,0.4); }
+  </style>
+</head>
+<body>
+  <div class="note yellow">
+    <div class="titlebar"><span class="tb">─</span><span class="tb">✕</span></div>
+    <div class="toolbar"><span><strong>B</strong></span><span><em>I</em></span><span style="text-decoration:underline">U</span><span>•</span><span class="saved">Saved</span></div>
+    <div class="body">
+      <strong>Weekend plans</strong><br /><br />
+      Farmers market Saturday<br />
+      Call Alex about dinner<br /><br />
+      Pack for the hike<br />
+      Charge camera batteries
+    </div>
+  </div>
+  <div class="note green">
+    <div class="titlebar"><span class="tb">─</span><span class="tb">✕</span></div>
+    <div class="toolbar"><span><strong>B</strong></span><span><em>I</em></span><span>✓</span><span class="saved">Saved</span></div>
+    <div class="body">
+      <strong>Groceries</strong>
+      <ul>
+        <li class="done">Eggs</li>
+        <li class="done">Spinach</li>
+        <li>Rice</li>
+        <li>Olive oil</li>
+        <li>Apples</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note blue">
+    <div class="titlebar"><span class="tb">─</span><span class="tb">✕</span></div>
+    <div class="toolbar"><span><strong>B</strong></span><span><em>I</em></span><span class="saved">Saved</span></div>
+    <div class="body">
+      <strong>Book ideas</strong><br /><br />
+      Short stories about cities at night.<br /><br />
+      Keep drafts as Markdown — easy to sync and edit anywhere.
+    </div>
+  </div>
+  <div class="label">Tack Notes</div>
+</body>
+</html>

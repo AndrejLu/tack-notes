@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      width: 440px;
+      height: 520px;
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(500px 200px at 10% -10%, rgba(196, 92, 38, 0.08), transparent 55%),
+        #f3efe6;
+      color: #1c1a16;
+      overflow: hidden;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 16px 10px; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand img { width: 22px; height: 22px; border-radius: 5px; }
+    .brand h1 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
+    .new-btn {
+      border: none; background: #c45c26; color: #fff; border-radius: 8px;
+      padding: 8px 12px; font-weight: 600; font-size: 13px; font-family: inherit;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .search {
+      margin: 0 16px 12px; padding: 9px 12px;
+      border: 1px solid rgba(28,26,22,0.12); border-radius: 8px;
+      background: #fffcf7; color: #6b6560; font-size: 13px;
+    }
+    .list { list-style: none; padding: 0 10px 16px; }
+    .list li {
+      display: flex; gap: 10px; padding: 10px; border-radius: 10px; margin-bottom: 4px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .meta { min-width: 0; }
+    .meta strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .meta span { display: block; font-size: 12px; color: #6b6560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px; }
+    .meta time { font-size: 11px; color: #6b6560; opacity: 0.85; margin-top: 3px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="../icon.png" alt="" />
+      <h1>Tack Notes</h1>
+    </div>
+    <button class="new-btn" type="button">+ New</button>
+  </div>
+  <div class="search">Search notes…</div>
+  <ul class="list">
+    <li>
+      <span class="dot" style="background:#e6c200"></span>
+      <div class="meta">
+        <strong>Weekend plans</strong>
+        <span>Farmers market Saturday · Call Alex</span>
+        <time>Today, 10:14 AM</time>
+      </div>
+    </li>
+    <li>
+      <span class="dot" style="background:#3d9e5f"></span>
+      <div class="meta">
+        <strong>Groceries</strong>
+        <span>Eggs, Spinach, Rice, Olive oil</span>
+        <time>Yesterday</time>
+      </div>
+    </li>
+    <li>
+      <span class="dot" style="background:#4a90c4"></span>
+      <div class="meta">
+        <strong>Book ideas</strong>
+        <span>Short stories about cities at night</span>
+        <time>Tue</time>
+      </div>
+    </li>
+    <li>
+      <span class="dot" style="background:#d46b9a"></span>
+      <div class="meta">
+        <strong>Garden</strong>
+        <span>Water herbs · Repot basil</span>
+        <time>Sep 12</time>
+      </div>
+    </li>
+    <li>
+      <span class="dot" style="background:#888"></span>
+      <div class="meta">
+        <strong>Travel checklist</strong>
+        <span>Passport, chargers, walking shoes</span>
+        <time>Sep 8</time>
+      </div>
+    </li>
+  </ul>
+</body>
+</html>
