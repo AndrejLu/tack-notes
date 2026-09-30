@@ -78,6 +78,20 @@ describe('Markdown round-trip', () => {
     expect(markdownToHtml(md)).toBe('<p>hello</p><p><br></p><p>world</p>')
   })
 
+  it('does not double lines from ProseMirror trailing breaks on every paragraph', () => {
+    // TipTap getHTML() often appends trailingBreak inside each paragraph
+    const html =
+      '<p>line one<br class="ProseMirror-trailingBreak"></p>' +
+      '<p>line two<br class="ProseMirror-trailingBreak"></p>' +
+      '<p><br class="ProseMirror-trailingBreak"></p>' +
+      '<p>line three<br class="ProseMirror-trailingBreak"></p>'
+    const md = htmlToMarkdown(html)
+    expect(md).toBe('line one\nline two\n\nline three\n')
+    // Stable across reload cycles
+    expect(htmlToMarkdown(markdownToHtml(md))).toBe(md)
+    expect(htmlToMarkdown(markdownToHtml(htmlToMarkdown(markdownToHtml(md))))).toBe(md)
+  })
+
   it('preserves blank lines from br-separated clipboard HTML', () => {
     const html =
       'PRO one<br>PRO two<br><br>NXD one<br><br><br>ANO one'

@@ -205,7 +205,12 @@ export function htmlToMarkdown(html: string): string {
   )
   remaining = remaining.replace(/<\/?div\b[^>]*>/gi, '\n').replace(/<\/?span\b[^>]*>/gi, '')
 
-  // Normalize void tags (including <br class="ProseMirror-trailingBreak">)
+  // TipTap cursor placeholder — not content; converting it to \n doubles every line on save
+  remaining = remaining.replace(
+    /<br\b[^>]*class=["'][^"']*ProseMirror-trailingBreak[^"']*["'][^>]*>/gi,
+    ''
+  )
+  // Real hard breaks
   remaining = remaining.replace(/<br\b[^>]*>/gi, '\n')
 
   const blockRe =
@@ -235,7 +240,7 @@ export function htmlToMarkdown(html: string): string {
     } else if (part.type === 'ol') {
       blocks.push(orderedListHtmlToMarkdown(part.inner))
     } else {
-      const line = inlineHtmlToMarkdown(part.inner)
+      const line = inlineHtmlToMarkdown(part.inner).replace(/\n+$/g, '')
       // Empty editor paragraph (<p></p> or <p><br></p>) → one blank line
       if (line.trim() === '') {
         blocks.push('')
