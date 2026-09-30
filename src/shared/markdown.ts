@@ -221,13 +221,20 @@ export function htmlToMarkdown(html: string): string {
 
   while ((match = blockRe.exec(remaining)) !== null) {
     if (match.index > lastIndex) {
-      pushGapParts(parts, remaining.slice(lastIndex, match.index))
+      const gap = remaining.slice(lastIndex, match.index)
+      // Ignore pretty-print whitespace between tags — blank lines come only from empty <p>
+      if (gap.replace(/<[^>]+>/g, '').trim()) {
+        pushGapParts(parts, gap)
+      }
     }
     parts.push({ type: match[1].toLowerCase(), inner: match[3] })
     lastIndex = match.index + match[0].length
   }
   if (lastIndex < remaining.length) {
-    pushGapParts(parts, remaining.slice(lastIndex))
+    const gap = remaining.slice(lastIndex)
+    if (gap.replace(/<[^>]+>/g, '').trim()) {
+      pushGapParts(parts, gap)
+    }
   }
 
   if (parts.length === 0 && remaining.replace(/\s/g, '').length > 0) {
@@ -240,8 +247,10 @@ export function htmlToMarkdown(html: string): string {
     } else if (part.type === 'ol') {
       blocks.push(orderedListHtmlToMarkdown(part.inner))
     } else {
-      const line = inlineHtmlToMarkdown(part.inner).replace(/\n+$/g, '')
-      // Empty editor paragraph (<p></p> or <p><br></p>) → one blank line
+      const line = inlineHtmlToMarkdown(part.inner)
+        .replace(/\u200b/g, '')
+        .replace(/\n+$/g, '')
+      // Empty editor paragraph (<p></p>, <p><br></p>, or zwsp placeholder) → one blank line
       if (line.trim() === '') {
         blocks.push('')
         continue
@@ -356,10 +365,12 @@ function decodeEntities(s: string): string {
 
 /**
  * Convert supported Markdown body to HTML suitable for TipTap setContent.
+ * Blank lines use a zero-width space placeholder — bare <p></p> is dropped by the
+ * HTML parser, and <p><br></p> renders as two visual lines in TipTap.
  */
 export function markdownToHtml(md: string): string {
   const text = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-  if (!text.trim()) return '<p><br></p>'
+  if (!text.trim()) return '<p>\u200b</p>'
 
   const lines = text.replace(/\n$/, '').split('\n')
   const htmlParts: string[] = []
@@ -415,9 +426,9 @@ export function markdownToHtml(md: string): string {
       continue
     }
 
-    // Blank line → TipTap-compatible empty paragraph (<p></p> is stripped on paste/setContent)
+    // Blank line → invisible placeholder (keeps one visual line; see function doc)
     if (line.trim() === '') {
-      htmlParts.push('<p><br></p>')
+      htmlParts.push('<p>\u200b</p>')
       i++
       continue
     }
@@ -427,7 +438,7 @@ export function markdownToHtml(md: string): string {
     i++
   }
 
-  return htmlParts.join('') || '<p><br></p>'
+  return htmlParts.join('') || '<p>\u200b</p>'
 }
 
 function inlineMarkdownToHtml(text: string): string {

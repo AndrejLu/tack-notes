@@ -65,7 +65,7 @@ describe('Markdown round-trip', () => {
     const md = 'line one\n\nline two\n\n\nline three\n'
     const html = markdownToHtml(md)
     expect(html).toBe(
-      '<p>line one</p><p><br></p><p>line two</p><p><br></p><p><br></p><p>line three</p>'
+      '<p>line one</p><p>\u200b</p><p>line two</p><p>\u200b</p><p>\u200b</p><p>line three</p>'
     )
     const back = htmlToMarkdown(html)
     expect(back).toBe(md)
@@ -75,7 +75,7 @@ describe('Markdown round-trip', () => {
     const html = '<p>hello</p><p><br class="ProseMirror-trailingBreak"></p><p>world</p>'
     const md = htmlToMarkdown(html)
     expect(md).toBe('hello\n\nworld\n')
-    expect(markdownToHtml(md)).toBe('<p>hello</p><p><br></p><p>world</p>')
+    expect(markdownToHtml(md)).toBe('<p>hello</p><p>\u200b</p><p>world</p>')
   })
 
   it('does not double lines from ProseMirror trailing breaks on every paragraph', () => {
@@ -92,6 +92,14 @@ describe('Markdown round-trip', () => {
     expect(htmlToMarkdown(markdownToHtml(htmlToMarkdown(markdownToHtml(md))))).toBe(md)
   })
 
+  it('does not double blank lines when HTML is pretty-printed between tags', () => {
+    const md =
+      'PRO 16.09.2026 2h nov AiO za na steno\n\nNXD 21.07.2026 0,5h posodobitev urgent\n\nNXD 07.09.2026 1h llms.txt\n'
+    const pretty = markdownToHtml(md).replace(/<\/p><p/gi, '</p>\n\n<p')
+    expect(htmlToMarkdown(pretty)).toBe(md)
+    expect(htmlToMarkdown(markdownToHtml(htmlToMarkdown(pretty)))).toBe(md)
+  })
+
   it('preserves blank lines from br-separated clipboard HTML', () => {
     const html =
       'PRO one<br>PRO two<br><br>NXD one<br><br><br>ANO one'
@@ -100,9 +108,11 @@ describe('Markdown round-trip', () => {
   })
 
   it('preserves blank lines between paragraphs when CF_HTML omits empty p tags', () => {
+    // Without empty <p> tags, whitespace gaps alone are ignored (blank lines need empty paragraphs
+    // or plain-text paste). Adjacent paragraphs stay adjacent.
     const html = '<p>PRO one</p>\n\n<p>NXD one</p>'
     const md = htmlToMarkdown(html)
-    expect(md).toBe('PRO one\n\nNXD one\n')
+    expect(md).toBe('PRO one\nNXD one\n')
   })
 
   it('round-trips plain multiline paste with blank lines', () => {
@@ -114,7 +124,7 @@ describe('Markdown round-trip', () => {
       '\n' +
       'ANO 0,5h napajalnik za displej\n'
     const html = markdownToHtml(plain)
-    expect(html).toContain('<p><br></p>')
+    expect(html).toContain('\u200b')
     expect(htmlToMarkdown(html)).toBe(plain)
   })
 
