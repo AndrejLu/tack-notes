@@ -28,7 +28,7 @@ It is an original app and is **not** affiliated with Microsoft Sticky Notes.
 
 ## Install
 
-1. Download the latest installer: [`Tack-Notes-Setup-1.1.9.exe`](releases/Tack-Notes-Setup-1.1.9.exe) (or build from source below).
+1. Download the latest installer from [Releases](https://github.com/AndrejLu/tack-notes/releases/latest) (or build from source below).
 2. Run the installer (per-user; admin is not required by default).
 3. On first launch, pick a folder for your notes (or accept `Documents\Tack Notes`).
 
