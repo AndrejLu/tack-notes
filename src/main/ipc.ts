@@ -20,7 +20,8 @@ import {
 import type { NoteEditorPayload } from '@shared/ipc'
 
 const autosaveTimers = new Map<string, NodeJS.Timeout>()
-const AUTOSAVE_MS = 650
+/** Wait after typing stops before writing to disk (avoids Nextcloud lock churn). */
+const AUTOSAVE_MS = 2000
 
 function editorPayload(noteId: string): NoteEditorPayload | null {
   const live = storage.getLive(noteId)

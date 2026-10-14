@@ -71,6 +71,20 @@ describe('Markdown round-trip', () => {
     expect(back).toBe(md)
   })
 
+  it('preserves trailing blank lines at end of note', () => {
+    const md = 'line one\n\n\n'
+    const html = markdownToHtml(md)
+    expect(html).toBe('<p>line one</p><p>\u200b</p><p>\u200b</p>')
+    expect(htmlToMarkdown(html)).toBe(md)
+    // TipTap empty paragraphs at end (Enter after last line)
+    const tiptap =
+      '<p>line one<br class="ProseMirror-trailingBreak"></p>' +
+      '<p><br class="ProseMirror-trailingBreak"></p>' +
+      '<p><br class="ProseMirror-trailingBreak"></p>'
+    expect(htmlToMarkdown(tiptap)).toBe(md)
+    expect(htmlToMarkdown(markdownToHtml(md))).toBe(md)
+  })
+
   it('round-trips empty paragraphs from TipTap HTML', () => {
     const html = '<p>hello</p><p><br class="ProseMirror-trailingBreak"></p><p>world</p>'
     const md = htmlToMarkdown(html)

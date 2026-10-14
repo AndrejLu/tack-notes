@@ -261,11 +261,14 @@ export function htmlToMarkdown(html: string): string {
     }
   }
 
-  // Drop leading/trailing empties from wrapper noise; keep internal blanks
+  // Drop leading empties from wrapper noise; keep trailing blanks the user typed
   while (blocks.length > 0 && blocks[0] === '') blocks.shift()
-  while (blocks.length > 0 && blocks[blocks.length - 1] === '') blocks.pop()
 
-  return normalizeBody(blocks.join('\n'))
+  // join('\n') alone turns ['hello',''] into 'hello\n' — append one more \n so a
+  // trailing empty block becomes a real blank line before the EOF newline.
+  let body = blocks.join('\n')
+  if (blocks.length > 0 && blocks[blocks.length - 1] === '') body += '\n'
+  return normalizeBody(body)
 }
 
 /** Preserve blank lines found between HTML blocks (e.g. </p>\\n\\n<p>). */
@@ -273,7 +276,11 @@ function pushGapParts(parts: Array<{ type: string; inner: string }>, gap: string
   if (!gap) return
   const withoutTags = gap.replace(/<[^>]+>/g, '')
   if (withoutTags.trim()) {
-    for (const segment of withoutTags.split('\n')) {
+    const segments = withoutTags.split('\n')
+    // Leading/trailing empties here are usually wrapper <div>→newline noise, not content
+    while (segments.length > 0 && segments[0] === '') segments.shift()
+    while (segments.length > 0 && segments[segments.length - 1] === '') segments.pop()
+    for (const segment of segments) {
       parts.push({ type: 'p', inner: segment })
     }
     return
