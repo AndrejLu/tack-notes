@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { NoteSummary } from '@shared/note-model'
 import { COLOR_VALUES, applyTheme } from '../theme'
 
 export function CentralApp() {
   const [notes, setNotes] = useState<NoteSummary[]>([])
+  const [filtered, setFiltered] = useState<NoteSummary[]>([])
   const [query, setQuery] = useState('')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
@@ -21,12 +22,20 @@ export function CentralApp() {
     }
   }, [])
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return notes
-    return notes.filter(
-      (n) => n.title.toLowerCase().includes(q) || n.preview.toLowerCase().includes(q)
-    )
+  // Full-body search via main process (title/preview alone only cover the start of a note)
+  useEffect(() => {
+    const q = query.trim()
+    if (!q) {
+      setFiltered(notes)
+      return
+    }
+    let cancelled = false
+    void window.tack.searchNotes(q).then((results) => {
+      if (!cancelled) setFiltered(results)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [notes, query])
 
   return (
@@ -59,7 +68,7 @@ export function CentralApp() {
         <input
           className="search"
           type="search"
-          placeholder="Search notes"
+          placeholder="Search note contents"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search notes"
