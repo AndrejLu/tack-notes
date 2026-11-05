@@ -18,6 +18,7 @@ export function SettingsApp() {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [trash, setTrash] = useState<TrashEntry[]>([])
   const [message, setMessage] = useState<string | null>(null)
+  const [appVersion, setAppVersion] = useState<string>('')
   const [tab, setTab] = useState<'general' | 'trash'>('general')
   const [pending, setPending] = useState<PendingConfirm | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -31,6 +32,7 @@ export function SettingsApp() {
   useEffect(() => {
     void applyTheme()
     void reload()
+    void window.tack.getAppVersion().then(setAppVersion)
     const off = window.tack.onThemeChanged((t) => {
       document.documentElement.dataset.theme = t
     })
@@ -77,7 +79,7 @@ export function SettingsApp() {
       cancelAnimationFrame(frame)
       ro.disconnect()
     }
-  }, [settings, tab, trash, message, pending])
+  }, [settings, tab, trash, message, pending, appVersion])
 
   const runConfirm = async () => {
     if (!pending) return
@@ -204,6 +206,29 @@ export function SettingsApp() {
               </select>
             </label>
             <p className="hint">Applies to the text in all sticky notes.</p>
+
+            <div className="switch-stack" style={{ marginTop: 12 }}>
+              <Switch
+                label="Show note title in title bar"
+                checked={settings.showNoteTitleInTitlebar !== false}
+                onChange={async (checked) => {
+                  await window.tack.updateSettings({ showNoteTitleInTitlebar: checked })
+                  setSettings(await window.tack.getSettings())
+                }}
+              />
+              <Switch
+                label="Open notes at the bottom"
+                checked={settings.scrollNoteToBottomOnOpen !== false}
+                onChange={async (checked) => {
+                  await window.tack.updateSettings({ scrollNoteToBottomOnOpen: checked })
+                  setSettings(await window.tack.getSettings())
+                }}
+              />
+            </div>
+            <p className="hint">
+              Title uses the first line of the note. Opening at the bottom is handy for long
+              notes you keep appending to.
+            </p>
           </section>
 
           <section>
@@ -252,6 +277,13 @@ export function SettingsApp() {
                 setSettings(await window.tack.getSettings())
               }}
             />
+          </section>
+
+          <section>
+            <h2>About</h2>
+            <p className="hint" style={{ marginBottom: 0 }}>
+              Tack Notes{appVersion ? ` ${appVersion}` : ''}
+            </p>
           </section>
         </div>
       )}

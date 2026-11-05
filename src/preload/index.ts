@@ -9,6 +9,7 @@ function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
 const api: IpcApi = {
   getSettings: () => invoke(IPC_CHANNELS.invoke.getSettings),
   updateSettings: (patch) => invoke(IPC_CHANNELS.invoke.updateSettings, patch),
+  getAppVersion: () => invoke(IPC_CHANNELS.invoke.getAppVersion),
   pickStorageFolder: () => invoke(IPC_CHANNELS.invoke.pickStorageFolder),
   completeSetup: (folder) => invoke(IPC_CHANNELS.invoke.completeSetup, folder),
   changeStorageFolder: (folder, mode) =>
@@ -68,6 +69,12 @@ const api: IpcApi = {
     const listener = (_: Electron.IpcRendererEvent, size: Parameters<typeof cb>[0]) => cb(size)
     ipcRenderer.on(IPC_CHANNELS.events.noteFontSizeChanged, listener)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.events.noteFontSizeChanged, listener)
+  },
+  onSettingsChanged: (cb) => {
+    const listener = (_: Electron.IpcRendererEvent, settings: Parameters<typeof cb>[0]) =>
+      cb(settings)
+    ipcRenderer.on(IPC_CHANNELS.events.settingsChanged, listener)
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.events.settingsChanged, listener)
   },
   onSaveStatus: (cb) => {
     const listener = (_: Electron.IpcRendererEvent, payload: Parameters<typeof cb>[0]) => cb(payload)

@@ -46,6 +46,8 @@ const defaultSettings = (): AppSettings => ({
   storageFolder: null,
   theme: 'system',
   noteFontSize: DEFAULT_NOTE_FONT_SIZE,
+  showNoteTitleInTitlebar: true,
+  scrollNoteToBottomOnOpen: true,
   launchAtLogin: false,
   rememberWindowLayout: true,
   hideTaskbarIcon: false,

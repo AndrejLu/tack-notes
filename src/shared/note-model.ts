@@ -102,6 +102,10 @@ export interface AppSettings {
   theme: ThemePreference
   /** Global note body font size in pixels. */
   noteFontSize: NoteFontSize
+  /** Show the note title (first line) in the note window title bar. */
+  showNoteTitleInTitlebar: boolean
+  /** When opening a note, scroll so the end of the text is visible. */
+  scrollNoteToBottomOnOpen: boolean
   launchAtLogin: boolean
   /** Remember note (and central) window positions and sizes. */
   rememberWindowLayout: boolean

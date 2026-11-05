@@ -32,6 +32,7 @@ export interface IpcApi {
   // App lifecycle / settings
   getSettings(): Promise<AppSettings>
   updateSettings(patch: Partial<AppSettings>): Promise<AppSettings>
+  getAppVersion(): Promise<string>
   pickStorageFolder(): Promise<string | null>
   completeSetup(storageFolder: string): Promise<void>
   changeStorageFolder(folder: string, mode: 'open' | 'migrate'): Promise<{ ok: boolean; error?: string }>
@@ -80,6 +81,7 @@ export interface IpcApi {
   onNoteUpdated(cb: (payload: NoteEditorPayload) => void): () => void
   onThemeChanged(cb: (theme: 'light' | 'dark') => void): () => void
   onNoteFontSizeChanged(cb: (size: number) => void): () => void
+  onSettingsChanged(cb: (settings: AppSettings) => void): () => void
   onSaveStatus(cb: (payload: { noteId: string; status: SaveStatus; error?: string }) => void): () => void
 }
 
@@ -87,6 +89,7 @@ export const IPC_CHANNELS = {
   invoke: {
     getSettings: 'tack:getSettings',
     updateSettings: 'tack:updateSettings',
+    getAppVersion: 'tack:getAppVersion',
     pickStorageFolder: 'tack:pickStorageFolder',
     completeSetup: 'tack:completeSetup',
     changeStorageFolder: 'tack:changeStorageFolder',
@@ -124,6 +127,7 @@ export const IPC_CHANNELS = {
     noteUpdated: 'tack:noteUpdated',
     themeChanged: 'tack:themeChanged',
     noteFontSizeChanged: 'tack:noteFontSizeChanged',
+    settingsChanged: 'tack:settingsChanged',
     saveStatus: 'tack:saveStatus'
   }
 } as const

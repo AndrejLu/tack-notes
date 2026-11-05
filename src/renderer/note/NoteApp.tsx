@@ -8,12 +8,17 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { DOMParser as PmDOMParser, Fragment, Slice } from '@tiptap/pm/model'
 import type { EditorView } from '@tiptap/pm/view'
 import type { NoteEditorPayload } from '@shared/ipc'
-import { NOTE_COLORS, type NoteColor } from '@shared/note-model'
+import {
+  NOTE_COLORS,
+  type NoteColor,
+  DEFAULT_NOTE_FONT_SIZE,
+  deriveTitle,
+  isNoteFontSize
+} from '@shared/note-model'
 import { htmlToMarkdown, markdownToHtml } from '@shared/markdown'
 import { COLOR_VALUES, applyTheme } from '../theme'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import '../components/confirm.css'
-import { DEFAULT_NOTE_FONT_SIZE } from '@shared/note-model'
 
 function getNoteId(): string {
   const params = new URLSearchParams(window.location.search)
@@ -116,11 +121,17 @@ function handleNotePaste(view: EditorView, event: ClipboardEvent): boolean {
   return false
 }
 
+function scrollNoteBodyToBottom(): void {
+  const el = document.querySelector('.note-shell .body') as HTMLElement | null
+  if (el) el.scrollTop = el.scrollHeight
+}
+
 export function NoteApp() {
   const noteId = useMemo(() => getNoteId(), [])
   const [payload, setPayload] = useState<NoteEditorPayload | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [noteFontSize, setNoteFontSize] = useState(DEFAULT_NOTE_FONT_SIZE)
+  const [showTitleInTitlebar, setShowTitleInTitlebar] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [sourceMode, setSourceMode] = useState(false)
@@ -128,6 +139,7 @@ export function NoteApp() {
   const applyingRemote = useRef(false)
   const lastSent = useRef('')
   const loadedRef = useRef(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   const pushBody = useCallback(
     (md: string) => {
@@ -168,7 +180,9 @@ export function NoteApp() {
       if (applyingRemote.current) return
       const md = htmlToMarkdown(ed.getHTML())
       pushBody(md)
-      setPayload((p) => (p ? { ...p, saveStatus: 'unsaved', bodyMarkdown: md } : p))
+      setPayload((p) =>
+        p ? { ...p, saveStatus: 'unsaved', bodyMarkdown: md, title: deriveTitle(md) } : p
+      )
     }
   })
 
@@ -181,6 +195,7 @@ export function NoteApp() {
       const settings = await window.tack.getSettings()
       const size = settings.noteFontSize ?? DEFAULT_NOTE_FONT_SIZE
       setNoteFontSize(size)
+      setShowTitleInTitlebar(settings.showNoteTitleInTitlebar !== false)
       document.documentElement.style.setProperty('--note-font-size', `${size}px`)
       const p = await window.tack.getNote(noteId)
       if (cancelled || !p) return
@@ -195,10 +210,22 @@ export function NoteApp() {
         editor.commands.setContent(markdownToHtml(p.bodyMarkdown), false)
         applyingRemote.current = false
       }
+      const preferBottom = settings.scrollNoteToBottomOnOpen !== false
       // Focus after the view is painted — empty notes otherwise never receive keystrokes
       requestAnimationFrame(() => {
-        if (!cancelled && !p.unsupportedMarkup) {
+        if (cancelled) return
+        if (p.unsupportedMarkup) {
+          if (preferBottom && bodyRef.current) {
+            bodyRef.current.scrollTop = bodyRef.current.scrollHeight
+          }
+          return
+        }
+        if (preferBottom) {
           editor.commands.focus('end')
+          scrollNoteBodyToBottom()
+          requestAnimationFrame(scrollNoteBodyToBottom)
+        } else {
+          editor.commands.focus('start')
         }
       })
     })()
@@ -213,9 +240,16 @@ export function NoteApp() {
 
   useEffect(() => {
     const offFont = window.tack.onNoteFontSizeChanged((size) => {
-      setNoteFontSize(size)
+      if (isNoteFontSize(size)) setNoteFontSize(size)
     })
-    return offFont
+    const offSettings = window.tack.onSettingsChanged((s) => {
+      if (isNoteFontSize(s.noteFontSize)) setNoteFontSize(s.noteFontSize)
+      setShowTitleInTitlebar(s.showNoteTitleInTitlebar !== false)
+    })
+    return () => {
+      offFont()
+      offSettings()
+    }
   }, [])
 
   useEffect(() => {
@@ -296,7 +330,13 @@ export function NoteApp() {
   return (
     <div className="note-shell" style={{ background: bg, ['--note-accent' as string]: accent }}>
       <header className="note-titlebar" style={{ background: accent }}>
-        <div className="drag-region" />
+        {showTitleInTitlebar ? (
+          <div className="note-titlebar-title" title={payload?.title || 'Untitled note'}>
+            {payload?.title || 'Untitled note'}
+          </div>
+        ) : (
+          <div className="drag-region" />
+        )}
         <div className="titlebar-actions">
           <button
             type="button"
@@ -486,6 +526,7 @@ export function NoteApp() {
 
       <div
         className="body"
+        ref={bodyRef}
         onMouseDown={(e) => {
           if (menuOpen) setMenuOpen(false)
           if (sourceMode) return
@@ -501,9 +542,12 @@ export function NoteApp() {
             value={sourceText}
             autoFocus
             onChange={(e) => {
-              setSourceText(e.target.value)
-              pushBody(e.target.value)
-              setPayload((p) => (p ? { ...p, saveStatus: 'unsaved' } : p))
+              const md = e.target.value
+              setSourceText(md)
+              pushBody(md)
+              setPayload((p) =>
+                p ? { ...p, saveStatus: 'unsaved', bodyMarkdown: md, title: deriveTitle(md) } : p
+              )
             }}
             spellCheck={false}
           />

@@ -82,6 +82,7 @@ export function registerIpc(): void {
   const ch = IPC_CHANNELS.invoke
 
   ipcMain.handle(ch.getSettings, () => loadSettings())
+  ipcMain.handle(ch.getAppVersion, () => app.getVersion())
   ipcMain.handle(ch.updateSettings, (_e, patch: Partial<ReturnType<typeof loadSettings>>) => {
     const prev = loadSettings()
     const sanitized: Partial<ReturnType<typeof loadSettings>> = { ...patch }
@@ -89,6 +90,16 @@ export function registerIpc(): void {
       if (!isNoteFontSize(patch.noteFontSize)) {
         delete sanitized.noteFontSize
       }
+    }
+    if (patch && 'showNoteTitleInTitlebar' in patch && typeof patch.showNoteTitleInTitlebar !== 'boolean') {
+      delete sanitized.showNoteTitleInTitlebar
+    }
+    if (
+      patch &&
+      'scrollNoteToBottomOnOpen' in patch &&
+      typeof patch.scrollNoteToBottomOnOpen !== 'boolean'
+    ) {
+      delete sanitized.scrollNoteToBottomOnOpen
     }
     const next = patchSettings(sanitized)
     if (
@@ -107,6 +118,7 @@ export function registerIpc(): void {
     if (isNoteFontSize(next.noteFontSize) && next.noteFontSize !== prev.noteFontSize) {
       windows.broadcast(IPC_CHANNELS.events.noteFontSizeChanged, next.noteFontSize)
     }
+    windows.broadcast(IPC_CHANNELS.events.settingsChanged, next)
     return next
   })
   ipcMain.handle(ch.getDefaultStorageFolder, () => getDefaultStorageFolder())
