@@ -238,6 +238,12 @@ export function NoteApp() {
     document.documentElement.style.setProperty('--note-font-size', `${noteFontSize}px`)
   }, [noteFontSize])
 
+  // Keep taskbar / Alt+Tab label in sync (Chrome-style: "Title - Tack Notes")
+  useEffect(() => {
+    const name = payload?.title?.trim() || 'Untitled note'
+    document.title = `${name} - Tack Notes`
+  }, [payload?.title])
+
   useEffect(() => {
     const offFont = window.tack.onNoteFontSizeChanged((size) => {
       if (isNoteFontSize(size)) setNoteFontSize(size)

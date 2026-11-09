@@ -51,6 +51,7 @@ function emitSaveStatus(noteId: string, status: SaveStatus, error?: string): voi
   windows.broadcast(IPC_CHANNELS.events.saveStatus, { noteId, status, error })
   const payload = editorPayload(noteId)
   if (payload) {
+    windows.setNoteWindowTitle(noteId, payload.title)
     windows.sendToNote(noteId, IPC_CHANNELS.events.noteUpdated, payload)
   }
 }
@@ -228,6 +229,7 @@ export function registerIpc(): void {
     }
     storage.setEditorBody(noteId, bodyMarkdown)
     scheduleAutosave(noteId)
+    windows.setNoteWindowTitle(noteId, deriveTitle(bodyMarkdown))
     const live = storage.getLive(noteId)
     return {
       status: (live?.conflict ? 'conflict' : 'unsaved') as SaveStatus,
@@ -330,12 +332,18 @@ export function registerIpc(): void {
     if (e.type === 'notes-changed') broadcastNotes()
     if (e.type === 'note-external') {
       const payload = editorPayload(e.noteId)
-      if (payload) windows.sendToNote(e.noteId, IPC_CHANNELS.events.noteUpdated, payload)
+      if (payload) {
+        windows.setNoteWindowTitle(e.noteId, payload.title)
+        windows.sendToNote(e.noteId, IPC_CHANNELS.events.noteUpdated, payload)
+      }
       broadcastNotes()
     }
     if (e.type === 'conflict') {
       const payload = editorPayload(e.conflict.noteId)
-      if (payload) windows.sendToNote(e.conflict.noteId, IPC_CHANNELS.events.noteUpdated, payload)
+      if (payload) {
+        windows.setNoteWindowTitle(e.conflict.noteId, payload.title)
+        windows.sendToNote(e.conflict.noteId, IPC_CHANNELS.events.noteUpdated, payload)
+      }
     }
   })
 }

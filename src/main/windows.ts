@@ -7,7 +7,13 @@ import path from 'path'
 import { loadSession, saveSession, loadSettings } from './app-paths'
 import { storage } from './storage'
 import { getIconPath } from './app-icon'
-import type { NoteWindowState, SessionState, WindowBounds } from '@shared/note-model'
+import { deriveTitle, type NoteWindowState, type SessionState, type WindowBounds } from '@shared/note-model'
+
+/** Taskbar / Alt+Tab label, Chrome-style: "Shopping list - Tack Notes". */
+export function formatNoteWindowTitle(noteTitle: string): string {
+  const name = noteTitle.trim() || 'Untitled note'
+  return `${name} - Tack Notes`
+}
 
 function preloadPath(): string {
   return path.join(__dirname, '../preload/index.js')
@@ -391,6 +397,10 @@ export class WindowManager {
       this.defaultBounds()
     const bounds = clampToVisible(rawBounds)
     const alwaysOnTop = opts?.alwaysOnTop ?? saved?.alwaysOnTop ?? false
+    const live = storage.getLive(noteId)
+    const windowTitle = formatNoteWindowTitle(
+      live ? deriveTitle(live.editorBody) : 'Untitled note'
+    )
 
     const win = new BrowserWindow(
       baseOptions({
@@ -400,7 +410,7 @@ export class WindowManager {
         y: bounds.y,
         minWidth: 240,
         minHeight: 180,
-        title: 'Note',
+        title: windowTitle,
         frame: false,
         transparent: false,
         backgroundColor: '#fff6a5',
@@ -546,6 +556,13 @@ export class WindowManager {
   sendToNote(noteId: string, channel: string, payload: unknown): void {
     const win = this.getNoteWindow(noteId)
     win?.webContents.send(channel, payload)
+  }
+
+  setNoteWindowTitle(noteId: string, noteTitle: string): void {
+    const win = this.getNoteWindow(noteId)
+    if (!win) return
+    const next = formatNoteWindowTitle(noteTitle)
+    if (win.getTitle() !== next) win.setTitle(next)
   }
 }
 
